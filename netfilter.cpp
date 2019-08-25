@@ -51,6 +51,7 @@ bool filter(unsigned char* data, int size){
 	struct ip_header ip;
 	struct tcp_header tcp;
 	unsigned char buf[0x100];
+    unsigned char payload[0x100];
 
 	int ip_header_length = 0;
 	int tcp_header_length = 0;
@@ -69,7 +70,11 @@ bool filter(unsigned char* data, int size){
 			tcp_data_length = size - ip_header_length - tcp_header_length;
 
 			if (!memcmp(&data[40], "GET", 3)){
-				if (!memcmp(&data[62], domain, strlen(domain))){
+                if (tcp_data_length < 0x100)
+                    memcpy(payload, &data[40], tcp_data_length);
+                else 
+                    memcpy(payload, &data[40], 0x100);
+                if (strstr((char*)payload, (char*)domain)){
 					return true;
 				}
 			}
